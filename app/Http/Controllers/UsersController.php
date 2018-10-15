@@ -25,8 +25,9 @@ class UsersController extends Controller
         try {
 
             $user = User::create([
-                'user_number' => $request->user,
-                'password' => $request->pass,
+                'user_id'=> $request->user_id,
+                'user' => $request->user,
+                'pass' => $request->pass,
                 'full_name' => $request->full_name,
                 'user_level' => $request->user_level,
                 'user_group' => $request->user_group,

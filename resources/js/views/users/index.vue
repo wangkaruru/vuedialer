@@ -6,8 +6,8 @@
             <div class="col-12">
                 <div class="page-title-box">
                     <h4 class="page-title">User List</h4>
-                    
-                    </div>
+                     </div>
+                   
             </div>
         </div>
         <!-- end page title -->
@@ -19,6 +19,7 @@
                             <div class="col-lg-12">
                                 <div class="table-responsive">
                                     <table class="table table-hover" v-if="users">
+                                    
                                         <thead>
                                         <tr>
                                             <th>USER ID</th>
@@ -37,10 +38,9 @@
                                             <td>{{user.user_group}}</td>
                                             <td>{{user.active}}</td>
                                             <td>
-                                            <a href="#" @click="editModal(user)" type="button" class="btn btn-primary btn-rounded btn-sm my-0"><i class="fa fa-edit blue"> </i>edit</a> /
-                                            <a href="#" @click="deleteUser(user.id)" type="button" class="btn btn-danger btn-rounded btn-sm my-0"><i class="fa fa-trash red" >delete</i></a>
-                                 
-                                             
+                                            
+                                             <span class="table-remove"><button @click="editModal(user)"  type="button" class="btn btn-primary btn-rounded btn-sm my-0">Edit</button></span>
+                                            <span class="table-remove"><button  @click="deleteUser(user.user_id)" type="button" class="btn btn-danger btn-rounded btn-sm my-0">Delete</button></span>
                                             </td>
                                             </tr>
                                         </tbody>
@@ -58,19 +58,102 @@
                 </div> <!-- end card -->
             </div><!-- end col -->
         </div>
+        
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="addNew" tabindex="-1" role="dialog" aria-labelledby="addNewLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" v-show="!editmode" id="addNewLabel">Add New</h5>
+                    <h5 class="modal-title" v-show="editmode" id="addNewLabel">Update User's Info</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form @submit.prevent="editmode ? updateUser() : createUser()">
+                <div class="modal-body">
+                     
+                      
+              <div class="form-group">
+                  <input type="text" v-model="form.user" name="user" placeholder="user"
+                 class="form-control" >
+                
+              </div>
+              <div class="form-group">
+                 <input v-model="form.pass" type="password" name="pass" placeholder="Password"
+                  class="form-control" >
+                
+              </div>
+              
+
+              <div class="form-group">
+                  <input v-model="form.full_name" name="full_name" placeholder="Full Name"
+                 class="form-control" >
+                
+              </div>
+
+              <div class="form-group">
+                  <input v-model="form.user_level" name="user_level" placeholder="user level"
+                 class="form-control" >
+                
+              </div>
+
+              <div class="form-group">
+                  <input v-model="form.user_group" name="user_group" placeholder="user group"
+                 class="form-control" >
+                
+              </div>
+              
+              <div class="form-group">
+                  <input v-model="form.phone_login" name="phone_login" placeholder="phone login"
+                 class="form-control" >
+                
+              </div>
+
+               <div class="form-group">
+                  <input v-model="form.phone_pass" name="phone_pass" placeholder="phone_pass"
+                 class="form-control" >
+                
+              </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button v-show="!editmode" type="submit" class="btn btn-primary">Create</button>
+                </div>
+
+                </form>
+
+                </div>
+            </div>
+            </div>
     </div>
 </template>
 
 <script>
+import { Form, HasError, AlertError } from "vform";
     export default {
         
-
+ 
         mounted() {
         },
 
         data() {
             return {
                 users: {},
+                editmode: false,
+                users : {},
+                form: new Form({
+                    user_id:'',
+                    user : '',
+                    pass: '',
+                    full_name: '',
+                    user_group: '',
+                    user_level: '',
+                    phone_login: '',
+                    phone_pass:''
+                })
             }
         },
 
@@ -85,87 +168,95 @@
                 }
                 axios.get('/api/users?page=' + page)
                     .then(response => this.users = response.data);
+                     //$('#loader').success('hide')
             },
-             
-    updateUser(){
-      this.$Progress.start();
-        this.form.put('api/user/'+this.form.id)
-        .then(()=>{
-            //success
-        swal(
-                'Updated!',
-                'User Updated',
-                'success'
-            )
-            $("#addNew").modal("hide");
-        this.$Progress.finish();
-         Fire.$emit('AfterCreate');
-          }).catch(
-      ()=>{
-    this.$Progress.fail();
-      });
+            updateUser(){
+                //this.$Progress.start();
+                // console.log('Editing data');
+                //alert(id);
+                this.form.put('api/users/'+this.form.user_id)
+                .then(() => {
+                    // success
+                    $('#addNew').modal('hide');
+                     swal(
+                        'Updated!',
+                        'Information has been updated.',
+                        'success'
+                        )
+                        this.$Progress.finish();
+                         Fire.$emit('AfterCreate');
+                })
+                .catch(() => {
+                    this.$Progress.fail();
+                });
 
-    },       
-        editModal(user){
-            this.editMode=true;
-            this.form.reset();
-            $("#addNew").modal("show");
-            this.form.fill(user)
-        },
-         newModal(){
-          this.editMode=false;
-        this.form.reset();
-        $("#addNew").modal("show");
-        },
-    loadUsers() {
-      axios.get("api/user").then(({ data }) => (this.users = data.data));
-    },
-    createUser() {
-      this.$Progress.start();
-      this.form
-        .post("api/user")
-        .then(() => {
-          $("#addNew").modal("hide");
-          this.$Progress.finish();
+            },
+            editModal(user){
+                this.editmode = true;
+                this.form.reset();
+                $('#addNew').modal('show');
+                this.form.fill(user);
+            },
+            newModal(){
+                this.editmode = false;
+                this.form.reset();
+                $('#addNew').modal('show');
+            },
+            deleteUser(id){
+                swal({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
 
-          Fire.$emit('AfterCreate');
-          toast({
-            type: "success",
-            title: "User Created"
-          });
-          this.$Progress.finish();
-        })
-        .catch(() => {});
-    },
-//start
-deleteUser(id){
-  swal({
-    title: 'Are you sure?',
-    text:"You wont be able to rvert this",
-    type:'warning',
-    showCancelButton:true,
-    confirmButtonColor:'#3085d6',
-    cancelButtonColor:'#d33',
-    confirmButtonText:'Yes,delete it!'
-  }).then((cancel)=>{
-    //send the request to server
-    this.form.delete('api/users/'+id).then(()=>{
-      swal(
-        'Deleted!',
-        'Your file has been deleted',
-        'success'
-    )
-     Fire.$emit('AfterCreate');
-    }).catch(()=>{
-      swal("Failed","There was an eror", "warning");
-    });
-  })}
+                        // Send request to the server
+                         if (result.value) {
 
+                             //alert(id);
+                                this.form.delete('api/users/'+id).then(()=>{
+                                        swal(
+                                        'Deleted!',
+                                        'Your file has been deleted.',
+                                        'success'
+                                        )
+                                    Fire.$emit('AfterCreate');
+                                }).catch(()=> {
+                                    swal("Failed!", "There was something wrong.", "warning");
+                                });
+                         }
+                    })
+            },
+            createUser(){
+                //this.$Progress.start();
+
+                this.form.post('api/users')
+                .then(()=>{
+                    Fire.$emit('AfterCreate');
+                    $('#addNew').modal('hide')
+
+                    toast({
+                        type: 'success',
+                        title: 'User Created in successfully'
+                        })
+                    this.$Progress.finish();
+
+                })
+                .catch(()=>{
+
+                })
+            },
             
-            
-            
+            say: function (message) {
+            alert(message)
+                }
 
         },
+        
+        
         
     }
 </script>

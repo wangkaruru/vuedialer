@@ -13,9 +13,10 @@ import pagination from 'laravel-vue-pagination'
 import HighchartsVue from 'highcharts-vue'
 import router from './routes'
 import Vue from 'vue'
-import vSelect from 'vue-select'
-Vue.component('v-select', vSelect);
+//import vSelect from 'vue-select'
+//Vue.component('v-select', vSelect);
 import swal from 'sweetalert2';
+
 
 
 Vue.use(VueRouter);
